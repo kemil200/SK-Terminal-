@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SK-TERMINAL / Marchés africains</title><link rel="stylesheet" href="styles.css"></head>
+<body>
+<header class="top"><a class="brand" aria-label="SK-TERMINAL" href="#markets">SK<span>-TERMINAL</span><i>▥</i></a><span class="workspace-label">ESPACE DE TRAVAIL / AFRIQUE DE L’OUEST</span><div class="top-right"><span class="muted">UTC</span> <time id="clock"></time><button id="databaseBtn" title="Vérifier la connexion PostgreSQL">DB</button><button id="helpBtn">AIDE <kbd>F1</kbd></button><span class="avatar">SK</span></div></header>
+<form id="commandForm" class="command"><span class="prompt">›</span><input id="command" aria-label="Commande du terminal" placeholder="Saisir un symbole ou une commande…  SNTS GP, BRVMC, FX, HELP" autocomplete="off" list="symbols"><datalist id="symbols"></datalist><kbd>Ctrl K</kbd><button class="go">EXÉCUTER ↵</button></form>
+<nav id="nav" aria-label="Modules du terminal"></nav>
+<div class="market-strip" id="indices"></div>
+<main><div class="page-heading"><div><span class="eyebrow" id="eyebrow">MONITEUR DE MARCHÉ</span><h1 id="pageTitle">La BRVM, en perspective.</h1></div><div class="heading-actions"><span id="sourceState" class="source-state">INSTANTANÉ LOCAL</span><button id="refresh">↻ Actualiser</button><button id="export">↓ Export CSV</button></div></div>
+<div id="view"></div></main>
+<footer><span><b class="orange">▰</b> SK-TERMINAL <span class="muted">/</span> <span id="status">Initialisation</span></span><span id="footerDate"></span><span class="muted">COURS HISTORIQUES · XOF <span class="sep">|</span> <button id="sourceBtn">Sources & couverture</button></span></footer>
+<dialog id="modal"><div class="dialog-top"><strong id="modalTitle"></strong><button id="closeModal" aria-label="Fermer">✕</button></div><div id="modalBody"></div></dialog><div id="toast" role="status"></div>
+<script src="data.js"></script><script src="core.js"></script><script src="news.js"></script><script src="shortcuts.js"></script><script src="extensions.js"></script><script src="app.js"></script></body></html>
+
+

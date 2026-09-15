@@ -1,0 +1,6 @@
+work/
+node_modules/
+.env
+.env.*
+!.env.example
+outputs/brvm-terminal/.env.local
