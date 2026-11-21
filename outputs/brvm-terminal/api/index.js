@@ -1,5 +1,6 @@
 const {news,json}=require('../server.cjs');
-const {feedRoute}=require('../feeds.cjs');
+const {feedRoute,africaKey}=require('../feeds.cjs');
+const {sourceRoute}=require('../sources.cjs');
 const {databaseHealth}=require('../database.cjs');
 module.exports=async(req,res)=>{
   if(req.method!=='GET')return json(res,405,{message:'Méthode non autorisée.'});
@@ -9,6 +10,8 @@ module.exports=async(req,res)=>{
   try{
     if(url.pathname==='/api/news')return await news(req,res,url);
     if(url.pathname==='/api/database/health')return json(res,200,await databaseHealth());
+    const routed=await sourceRoute(url,{hasAfricaKey:()=>!!africaKey()});
+    if(routed)return json(res,routed.status,routed.body);
     const result=await feedRoute(url);
     if(result)return json(res,result.status,result.body);
     return json(res,404,{message:'Route introuvable.'});

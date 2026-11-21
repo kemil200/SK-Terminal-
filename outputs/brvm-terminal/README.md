@@ -7,7 +7,8 @@ Terminal financier local en français : interface sombre, tableaux denses, ligne
 Node.js 22 ou supérieur recommandé. Installer les dépendances avec `npm install` avant le premier démarrage.
 
 ```powershell
-cd "C:\Users\betos\Documents\Codex\2026-09-10\je-2\outputs\brvm-terminal"
+cd outputs/brvm-terminal
+npm install
 npm start
 ```
 
@@ -20,7 +21,11 @@ L’ouverture directe d’`index.html` permet de consulter l’instantané hors 
 - **Marchés** : indices, cotations, filtre par symbole ou nom connu, tri, favoris persistants et carte des variations sur les valeurs ayant une date commune.
 - **Graphiques** : courbes, bougies OHLC, volumes lorsqu’ils sont fournis, MM20, survol des observations, horizons 1 mois à historique complet et agrégation journalière à annuelle.
 - **Comparateur** : deux instruments normalisés en base 100 à leur première date commune dans la fenêtre.
-- **Actualités** : recherche NewsAPI.org, français/anglais/toutes langues, tri par date/pertinence/popularité, source et heure UTC, liens vers les articles. Jusqu’à 40 articles par recherche, cache serveur de 15 minutes, erreurs et quotas affichés.
+- **Actualités** : trois sources au choix, toutes avec éditeur, heure UTC et lien vers l’article.
+  - *Google Actualités* (par défaut, **sans clé**) : flux RSS public de Google, éditions Sénégal, Côte d’Ivoire, France, Nigeria, Royaume-Uni, États-Unis, période 24 h / 7 j / 30 j. Jusqu’à 60 articles, cache 15 min.
+  - *Presse africaine* (**sans clé**) : flux RSS officiels de la BRVM et de la BCEAO, Financial Afrik, Jeune Afrique, Le Monde Afrique et Africanews, fusionnés et filtrables (`BRVM OR UEMOA`). Cache 10 min.
+  - *NewsAPI.org* (clé `NEWS_API_KEY`) : recherche plein texte, langue et tri.
+- **Macro** (`MACRO`, `Alt+0`) : régimes de croissance, d’inflation, de marché et de conditions financières, probabilité de récession US à 6 mois, sentiment 0–100, 14 indicateurs (taux US, courbe, inflation, chômage, EUR/USD, Brent, dollar, taux 10 ans zone euro…) avec percentile 10 ans et z-score, historique cliquable, « ce qui bouge » et calendrier des publications. Source : API gratuite et sans clé [MacroRadar](https://www.macroradar.io/developers), cache 1 h.
 - **Devises** : conversion et historique des taux entre XOF, EUR, USD, GBP, NGN et GHS.
 - **Portefeuille** : positions manuelles, quantité, prix de revient et plus-value latente aux dernières observations disponibles. Stockage local uniquement.
 - **Alertes** : seuil supérieur/inférieur, vérification à l’ouverture et lors de l’actualisation. Pas de service en arrière-plan quand la page est fermée.
@@ -30,11 +35,11 @@ L’ouverture directe d’`index.html` permet de consulter l’instantané hors 
 
 **Africanews** : le module RSS lit https://fr.africanews.com/feed/ avec filtre textuel, dates UTC et liens vers les articles. Cache serveur de 10 minutes. Le bouton « Recharger le flux » relit le flux via ce cache.
 
-**Pays / Africa API** : ajouter `AFRICA_API_KEY` dans `.env.local` côté serveur pour charger les profils pays, dont le Kenya. La clé est envoyée uniquement à `https://api.africa-api.com` dans l’en-tête Bearer. Sans clé, un message de configuration remplace les données. Les indicateurs affichent leur année, unité et source ; cache d’une heure.
+**Pays / Africa API · Banque mondiale** : sans clé, la fiche pays utilise l’API ouverte de la Banque mondiale (population, PIB, PIB/hab., croissance, inflation, chômage, solde courant, IDE). Ajouter `AFRICA_API_KEY` dans `.env.local` côté serveur pour utiliser Africa API à la place. La clé est envoyée uniquement à `https://api.africa-api.com` dans l’en-tête Bearer. Sans clé, un message de configuration remplace les données. Les indicateurs affichent leur année, unité et source ; cache d’une heure.
 
 ### Raccourcis clavier
 
-- `Alt+1` à `Alt+9` : Marchés, Graphiques, Comparateur, Actualités, Devises, Portefeuille, Alertes, Africanews, Pays.
+- `Alt+1` à `Alt+9` puis `Alt+0` : Marchés, Graphiques, Comparateur, Actualités, Devises, Portefeuille, Alertes, Africanews, Pays, Macro.
 - `Ctrl+K` (ou `Cmd+K`) : ligne de commande.
 - `Alt+R` : actualiser le module courant.
 - `Alt+E` : exporter les cours dans Marchés, Graphiques ou Comparateur.
@@ -43,7 +48,7 @@ L’ouverture directe d’`index.html` permet de consulter l’instantané hors 
 
 La navigation est suspendue pendant la saisie et dans les fenêtres modales. Les chiffres utilisent aussi leur position physique pour les claviers AZERTY.
 
-Les commandes `RSS` et `ECO` ouvrent respectivement Africanews et Pays.
+Les commandes `RSS`, `ECO` et `MACRO` ouvrent respectivement Africanews, Pays et Macro.
 
 | Commande | Action |
 | --- | --- |
@@ -67,6 +72,17 @@ Les historiques d’indices ont un volume vide. Ce champ reste manquant et s’a
 La variation de séance compare les deux dernières observations du fichier quotidien, qui peuvent être espacées de plusieurs jours. Les graphiques utilisent les prix tels que fournis : ajustements de dividendes et opérations sur titres non documentés. La comparaison n’est donc pas une mesure de rendement total. Les conversions utilisent la dernière date du JSON de la monnaie source, sans frais ni marge de change.
 
 **Actualiser** relit les CSV quotidiens et les six JSON de devises depuis les URL fournies. La vérification se répète toutes les 15 minutes tant que la page reste ouverte. Les séries antérieures sont conservées si un téléchargement échoue ou renvoie un historique plus ancien. Les actualisations sont en mémoire ; après rechargement, l’instantané fourni est utilisé jusqu’à la prochaine actualisation. Les CSV hebdomadaires à annuels de la source sont pris en charge par la fonction d’accès mais les graphiques agrègent localement les séries quotidiennes pour rester utilisables hors connexion.
+
+## Sources gratuites : conditions d’utilisation
+
+| Source | Clé | Conditions |
+| --- | --- | --- |
+| Google Actualités RSS | non | Flux fourni « pour un lecteur de flux personnel, usage non commercial ». Activé par défaut en local, **désactivé par défaut sur Vercel** (`GOOGLE_NEWS_RSS=on` pour forcer un usage strictement personnel). Le terminal n’affiche que titre, éditeur, date et le lien Google qui redirige vers l’article ; aucune page n’est aspirée. |
+| Flux RSS éditeurs (BRVM, BCEAO, Financial Afrik, Jeune Afrique, Le Monde, Africanews) | non | Flux publiés par les éditeurs pour la syndication : titres, résumés et lien vers l’article d’origine, source affichée. |
+| MacroRadar | non | Gratuit avec attribution (lien affiché dans le module). Séries US publiques ; 10 séries privées (S&P 500, VIX…) renvoient HTTP 451 et ne sont pas redistribuées. Cache 1 h côté serveur. |
+| Banque mondiale | non | Données ouvertes CC BY 4.0. API parfois lente (jusqu’à 25 s). |
+
+Alternative à Google Actualités pour un usage commercial ou public : l’API DOC 2.0 de [GDELT](https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/) (gratuite, liens directs, une requête toutes les 5 s).
 
 ## NewsAPI et clé
 
@@ -92,7 +108,7 @@ npm test
 
 Tests des CSV, variations, agrégations, comparaisons, conversions FX, moyennes mobiles et exploitation de l’ensemble de l’instantané.
 
-Architecture : `index.html`, `styles.css`, `app.js` (modules et graphiques Canvas), `core.js` (calculs), `news.js` (actualités), `server.cjs` (serveur et proxy NewsAPI), `data.js` (instantané public).
+Architecture : `index.html`, `styles.css`, `app.js` (modules et graphiques Canvas), `core.js` (calculs), `news.js` (actualités multi-sources), `macro.js` (module Macro), `server.cjs` (serveur et proxy NewsAPI), `sources.cjs` (Google Actualités, presse RSS, MacroRadar, Banque mondiale), `data.js` (instantané public).
 
 
 ## Connexion Neon ajoutée
