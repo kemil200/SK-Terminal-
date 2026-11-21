@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "start": "node server.cjs",
-    "test": "node --test tests.cjs extensions.test.cjs",
+    "test": "node --test tests.cjs extensions.test.cjs sources.test.cjs brvm-source.test.cjs",
     "check:db": "node database.cjs",
-    "build": "node build.cjs"
+    "build": "node build.cjs",
+    "update:data": "node update-snapshot.cjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0"

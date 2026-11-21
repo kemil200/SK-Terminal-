@@ -6,3 +6,4 @@ test('La route Afrique rejette les codes pays arbitraires',async()=>{assert.equa
 test('La lecture RSS borne la taille des réponses',async()=>{await assert.rejects(()=>limitedText(new Response('0123456789'),5),/volumineuse/);assert.equal(await limitedText(new Response('<rss/>'),100),'<rss/>')});
 
 test('Chiffres physiques AZERTY',()=>{assert.equal(shortcutAction({key:'ç',code:'Digit9',altKey:true}),'tab:9');assert.equal(shortcutAction({key:'&',code:'Digit1',altKey:true},true),null)});
+test('Alt+0 ouvre le dixième module (Macro)',()=>{assert.equal(shortcutAction({key:'0',altKey:true}),'tab:10');assert.equal(shortcutAction({key:'à',code:'Digit0',altKey:true}),'tab:10')});
