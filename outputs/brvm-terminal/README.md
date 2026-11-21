@@ -63,15 +63,28 @@ Les commandes `RSS`, `ECO` et `MACRO` ouvrent respectivement Africanews, Pays et
 
 ## Données et calculs
 
-Source : https://github.com/Fredysessie/brvm-data-public
+Sources :
 
-L’instantané `data.js` contient 66 historiques : 48 symboles d’actions, y compris des historiques anciens, et 18 indices. Il s’agit des répertoires effectivement disponibles, pas d’une garantie de cotation actuelle. La métadonnée du dépôt mentionne aussi BBGC, dont le répertoire était absent lors de la récupération. Les dernières dates sont affichées par instrument ; SVOC, par exemple, s’arrête en 2019. Aucun cours simulé.
+- Cours : https://github.com/harzat/brvm-data-public (BRVMetrics), mis à jour chaque soir de séance. L’ancienne source `Fredysessie/brvm-data-public` a été supprimée de GitHub (404) ; son historique jusqu’au 9 septembre 2026 reste dans l’instantané.
+- Devises : https://github.com/fawazahmed0/exchange-api (fixings quotidiens, sans clé). L’euro → XOF reste à 655,957.
+
+L’instantané `data.js` contient 67 historiques : 49 symboles d’actions, dont Bridge Bank Group CI (BBGC, introduite en septembre 2026), et 18 indices. Les dernières dates sont affichées par instrument ; SVOC, par exemple, s’arrête en 2019 et n’existe plus dans la source. Aucun cours simulé.
+
+Mettre l’instantané à jour (environ 30 secondes) :
+
+```powershell
+npm run update:data
+```
+
+**Qualité de la nouvelle source.** La clôture et le volume correspondent exactement à l’ancienne source sur les séances communes. En revanche, ouverture, plus haut et plus bas ne sont pas fiables pour les actions. L’historique antérieur au 10 septembre 2026 garde donc l’OHLC d’origine, et les séances suivantes utilisent l’enveloppe cohérente des valeurs publiées. Les bougies récentes sont indicatives.
+
+**Divisions du nominal.** La source ne les ajuste pas (Sonatel 1:10 le 26 octobre 2026, Onatel BF 1:2 en 2018). La BRVM plafonnant la variation quotidienne à ±7,5 %, un rapport de clôtures proche d’un ratio usuel (2, 3, 4, 5, 10…) d’une séance à l’autre est traité comme une division : les prix antérieurs sont divisés et les volumes multipliés. La fiche valeur indique l’ajustement appliqué. Les positions du portefeuille saisies avant une division doivent être corrigées à la main (quantité × ratio, prix de revient ÷ ratio).
 
 Les historiques d’indices ont un volume vide. Ce champ reste manquant et s’affiche « — » ; les cours restent exploitables. Les lignes invalides sont ignorées, les dates triées et les doublons dédupliqués. Les barres hebdomadaires commencent le lundi ; ouverture initiale, extrema, dernière clôture et somme des volumes constituent chaque agrégation. Un volume agrégé est manquant si une de ses composantes est manquante.
 
-La variation de séance compare les deux dernières observations du fichier quotidien, qui peuvent être espacées de plusieurs jours. Les graphiques utilisent les prix tels que fournis : ajustements de dividendes et opérations sur titres non documentés. La comparaison n’est donc pas une mesure de rendement total. Les conversions utilisent la dernière date du JSON de la monnaie source, sans frais ni marge de change.
+La variation de séance compare les deux dernières observations du fichier quotidien, qui peuvent être espacées de plusieurs jours. Les graphiques utilisent les prix ajustés des divisions du nominal, mais pas des dividendes. La comparaison n’est donc pas une mesure de rendement total. Les conversions utilisent la dernière date du JSON de la monnaie source, sans frais ni marge de change.
 
-**Actualiser** relit les CSV quotidiens et les six JSON de devises depuis les URL fournies. La vérification se répète toutes les 15 minutes tant que la page reste ouverte. Les séries antérieures sont conservées si un téléchargement échoue ou renvoie un historique plus ancien. Les actualisations sont en mémoire ; après rechargement, l’instantané fourni est utilisé jusqu’à la prochaine actualisation. Les CSV hebdomadaires à annuels de la source sont pris en charge par la fonction d’accès mais les graphiques agrègent localement les séries quotidiennes pour rester utilisables hors connexion.
+**Actualiser** relit les CSV quotidiens et le dernier fixing des six devises. L’actualisation est automatique à l’ouverture si l’instantané a plus d’un jour, puis toutes les 15 minutes tant que la page reste ouverte. Les nouvelles séances sont ajoutées à l’historique existant, puis les divisions sont ajustées. Les séries antérieures sont conservées si un téléchargement échoue ou renvoie un historique plus ancien. Les actualisations sont en mémoire ; après rechargement, l’instantané fourni est utilisé jusqu’à la prochaine actualisation. Les graphiques agrègent localement les séries quotidiennes (hebdomadaire à annuel) pour rester utilisables hors connexion.
 
 ## Sources gratuites : conditions d’utilisation
 
@@ -81,6 +94,8 @@ La variation de séance compare les deux dernières observations du fichier quot
 | Flux RSS éditeurs (BRVM, BCEAO, Financial Afrik, Jeune Afrique, Le Monde, Africanews) | non | Flux publiés par les éditeurs pour la syndication : titres, résumés et lien vers l’article d’origine, source affichée. |
 | MacroRadar | non | Gratuit avec attribution (lien affiché dans le module). Séries US publiques ; 10 séries privées (S&P 500, VIX…) renvoient HTTP 451 et ne sont pas redistribuées. Cache 1 h côté serveur. |
 | Banque mondiale | non | Données ouvertes CC BY 4.0. API parfois lente (jusqu’à 25 s). |
+| BRVMetrics (cours BRVM) | non | Mis à disposition « pour l’analyse personnelle, la formation et la vérification » ; données propriété de BRVM, SikaFinance et RicheBourse. Pour un usage commercial, voir ces sources. |
+| exchange-api (devises) | non | Gratuit, sans limite annoncée, servi par jsDelivr. |
 
 Alternative à Google Actualités pour un usage commercial ou public : l’API DOC 2.0 de [GDELT](https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/) (gratuite, liens directs, une requête toutes les 5 s).
 
@@ -108,7 +123,7 @@ npm test
 
 Tests des CSV, variations, agrégations, comparaisons, conversions FX, moyennes mobiles et exploitation de l’ensemble de l’instantané.
 
-Architecture : `index.html`, `styles.css`, `app.js` (modules et graphiques Canvas), `core.js` (calculs), `news.js` (actualités multi-sources), `macro.js` (module Macro), `server.cjs` (serveur et proxy NewsAPI), `sources.cjs` (Google Actualités, presse RSS, MacroRadar, Banque mondiale), `data.js` (instantané public).
+Architecture : `index.html`, `styles.css`, `app.js` (modules et graphiques Canvas), `core.js` (calculs, lecture des CSV, ajustement des divisions), `update-snapshot.cjs` (mise à jour de l’instantané), `news.js` (actualités multi-sources), `macro.js` (module Macro), `server.cjs` (serveur et proxy NewsAPI), `sources.cjs` (Google Actualités, presse RSS, MacroRadar, Banque mondiale), `data.js` (instantané public).
 
 
 ## Connexion Neon ajoutée
